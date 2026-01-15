@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.10+ + FastAPI, SQLModel, psycopg2-binary (PostgreSQL driver), uvicorn, python-multipart (001-backend-api)
+- Neon Serverless PostgreSQL with SQLModel ORM (001-backend-api)
+
+## Recent Changes
+- 001-backend-api: Added Python 3.10+ + FastAPI, SQLModel, psycopg2-binary (PostgreSQL driver), uvicorn, python-multipart
