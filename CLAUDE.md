@@ -212,6 +212,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - Python 3.10+ + FastAPI, SQLModel, psycopg2-binary (PostgreSQL driver), uvicorn, python-multipart (001-backend-api)
 - Neon Serverless PostgreSQL with SQLModel ORM (001-backend-api)
+- TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, Better Auth, React 18+, JWT libraries (001-auth-jwt)
+- Browser storage (httpOnly cookies for JWT), local state management (001-auth-jwt)
 
 ## Recent Changes
 - 001-backend-api: Added Python 3.10+ + FastAPI, SQLModel, psycopg2-binary (PostgreSQL driver), uvicorn, python-multipart
