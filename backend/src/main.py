@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .routes import tasks
+from .routes.protected import router as protected_router
 from .exceptions import (
     TaskNotFoundException,
     UserNotFoundException,
@@ -17,7 +18,8 @@ from .utils.logging import logger
 app = FastAPI(
     title="Todo API",
     description="RESTful API for managing todo tasks with user isolation",
-    version="1.0.0"
+    version="1.0.0",
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1}  # Hide default models to encourage JWT auth usage
 )
 
 # Add CORS middleware
@@ -31,6 +33,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(tasks.router, prefix="/api/{user_id}")
+app.include_router(protected_router, prefix="/api")
 
 # Add request logging middleware
 @app.middleware("http")

@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: JWT Authentication API
+  version: 1.0.0
+  description: API contract for JWT-based authentication in FastAPI backend
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token issued by Better Auth, provided as "Authorization: Bearer <token>"
+
+  schemas:
+    AuthenticatedUser:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Unique identifier for the authenticated user
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          description: Email address of the authenticated user
+          example: "user@example.com"
+        expires_at:
+          type: string
+          format: date-time
+          description: Timestamp when the token expires
+          example: "2023-12-31T23:59:59Z"
+        issued_at:
+          type: string
+          format: date-time
+          description: Timestamp when the token was issued
+          example: "2023-01-01T00:00:00Z"
+
+    JWTVerificationError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Description of the verification error
+          example: "Invalid or expired token"
+        error_code:
+          type: string
+          description: Standardized error code
+          example: "INVALID_TOKEN"
+        timestamp:
+          type: string
+          format: date-time
+          description: Time when the error occurred
+          example: "2023-01-01T00:00:00Z"
+
+paths:
+  /any-protected-endpoint:
+    get:
+      summary: Example of protected endpoint
+      description: Any endpoint that requires JWT authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response with authenticated user context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedUser'
+        '401':
+          description: Unauthorized - invalid, expired, or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTVerificationError'
+
+security:
+  - BearerAuth: []
