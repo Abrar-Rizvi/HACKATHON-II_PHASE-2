@@ -1,0 +1,30 @@
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.255.255.254:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 21.3s
+
+thread 'tokio-runtime-worker' (77691) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/mod.rs:963:22:
+Failed to lookup task type: Looking up task type for TaskId 42160 from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000023.meta
+    1: Unable to open static sorted file 00000017.sst
+    2: No such file or directory (os error 2)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tokio-runtime-worker' (77691) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/mod.rs:963:22:
+Failed to lookup task type: Looking up task type for TaskId 42160 from database failed
+
+Caused by:
+    0: Unable to open static sorted file referenced from 00000023.meta
+    1: Unable to open static sorted file 00000017.sst
+    2: No such file or directory (os error 2)
+Persisting failed: Unable to open static sorted file referenced from 00000249.meta
+
+Caused by:
+    0: Unable to open static sorted file 00000248.sst
+    1: No such file or directory (os error 2)
+[?25h

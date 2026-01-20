@@ -1,4 +1,6 @@
 // frontend/src/components/auth/SignupForm.tsx
+'use client';
+
 import React, { useState } from 'react';
 import { SignUpData } from '../../types/auth';
 

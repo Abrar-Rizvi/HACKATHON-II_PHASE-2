@@ -1,0 +1,322 @@
+openapi: 3.0.0
+info:
+  title: Task Authorization API
+  version: 1.0.0
+  description: API contract for user-level task authorization in the Todo API
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token issued by Better Auth, provided as "Authorization: Bearer <token>"
+
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the task
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        user_id:
+          type: string
+          description: User ID of the task owner
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          description: Task title
+          example: "Buy groceries"
+        completed:
+          type: boolean
+          description: Whether the task is completed
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: When the task was created
+          example: "2023-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the task was last updated
+          example: "2023-01-01T00:00:00Z"
+
+    AuthenticatedUser:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: Unique identifier for the authenticated user
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          description: Email address of the authenticated user
+          example: "user@example.com"
+        expires_at:
+          type: string
+          format: date-time
+          description: Timestamp when the token expires
+          example: "2023-12-31T23:59:59Z"
+        issued_at:
+          type: string
+          format: date-time
+          description: Timestamp when the token was issued
+          example: "2023-01-01T00:00:00Z"
+
+    AuthorizationError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Description of the authorization error
+          example: "Resource not found"
+        error_code:
+          type: string
+          description: Standardized error code
+          example: "RESOURCE_NOT_FOUND"
+        timestamp:
+          type: string
+          format: date-time
+          description: Time when the error occurred
+          example: "2023-01-01T00:00:00Z"
+
+paths:
+  /api/{user_id}/tasks:
+    get:
+      summary: Get all tasks for the authenticated user
+      description: Retrieve all tasks belonging to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID to retrieve tasks for (must match authenticated user)
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user's tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id in URL does not match authenticated user or resource doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+    post:
+      summary: Create a new task for the authenticated user
+      description: Create a new task that belongs to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID to create the task for (must match authenticated user)
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                completed:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id in URL does not match authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+  /api/{user_id}/tasks/{id}:
+    get:
+      summary: Get a specific task for the authenticated user
+      description: Retrieve a specific task that belongs to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID (must match authenticated user)
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The task ID to retrieve
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved the task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id doesn't match authenticated user or task doesn't exist for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+    put:
+      summary: Update a specific task for the authenticated user
+      description: Update a specific task that belongs to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID (must match authenticated user)
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The task ID to update
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id doesn't match authenticated user or task doesn't exist for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+    delete:
+      summary: Delete a specific task for the authenticated user
+      description: Delete a specific task that belongs to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID (must match authenticated user)
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The task ID to delete
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Task deleted successfully
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id doesn't match authenticated user or task doesn't exist for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+  /api/{user_id}/tasks/{id}/complete:
+    patch:
+      summary: Toggle completion status of a task for the authenticated user
+      description: Toggle the completion status of a task that belongs to the authenticated user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The user ID (must match authenticated user)
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: The task ID to update
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Task completion status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+        '404':
+          description: Not Found - user_id doesn't match authenticated user or task doesn't exist for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationError'
+
+security:
+  - BearerAuth: []

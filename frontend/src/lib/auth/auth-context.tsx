@@ -1,4 +1,6 @@
 // frontend/src/lib/auth/auth-context.tsx
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthCredentials, SignUpData, LoginResponse, AuthContextType } from '../../types/auth';
 import { verifyToken, isTokenExpired } from './jwt-utils';
@@ -14,6 +16,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for existing token on initial load
@@ -55,11 +58,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     throw new Error('Sign up functionality not yet implemented');
   };
 
+  const login = async (credentials: AuthCredentials) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // Implementation will connect to the backend auth API
+      console.log('Signing in with:', credentials);
+      // This is a placeholder - would connect to actual backend API
+      throw new Error('Sign in functionality not yet implemented');
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signIn = async (credentials: AuthCredentials) => {
-    // Implementation will connect to the backend auth API
-    console.log('Signing in with:', credentials);
-    // This is a placeholder - would connect to actual backend API
-    throw new Error('Sign in functionality not yet implemented');
+    // Alias for login method to maintain compatibility
+    return await login(credentials);
   };
 
   const signOut = async () => {
@@ -85,6 +102,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     token,
     isAuthenticated,
     isLoading,
+    error,
+    login,
     signUp,
     signIn,
     signOut,

@@ -216,6 +216,12 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - Browser storage (httpOnly cookies for JWT), local state management (001-auth-jwt)
 - Python 3.10+ (as specified in CLAUDE.md) + FastAPI, python-jose/cryptography, Better Auth JWT, PyJWT, uvicorn (001-jwt-auth-backend)
 - N/A (stateless JWT verification, no database calls during auth) (001-jwt-auth-backend)
+- Python 3.10+ (as specified in CLAUDE.md) + FastAPI, SQLModel, python-jose/cryptography, Better Auth JWT, PyJWT, uvicorn (001-auth-aware-todo)
+- PostgreSQL with SQLModel ORM (Neon database) (001-auth-aware-todo)
+- TypeScript 5.0+ (as specified in constraints) + Next.js 16+ (App Router), React 18+, Better Auth, Tailwind CSS (001-frontend-integration)
+- Browser storage (httpOnly cookies for JWT), local state management (useState, useContext) (001-frontend-integration)
+- TypeScript 5.0+, JavaScript ES2022 + Next.js 16+ (App Router), React 18+, Better Auth, Tailwind CSS, NextAuth.js (001-frontend-integration)
+- Browser storage (localStorage, sessionStorage), JWT tokens in httpOnly cookies (001-frontend-integration)
 
 ## Recent Changes
 - 001-backend-api: Added Python 3.10+ + FastAPI, SQLModel, psycopg2-binary (PostgreSQL driver), uvicorn, python-multipart

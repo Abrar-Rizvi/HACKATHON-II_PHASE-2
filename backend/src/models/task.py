@@ -2,14 +2,13 @@ from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
 import uuid
-from ..utils.uuid_generator import generate_uuid
+from .base import UserOwnedBase, generate_uuid
 
 
-class TaskBase(SQLModel):
+class TaskBase(UserOwnedBase):
     title: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field(default=None, max_length=500)
     completed: bool = Field(default=False)
-    user_id: str = Field(max_length=36)  # UUID as string
 
 
 class Task(TaskBase, table=True):

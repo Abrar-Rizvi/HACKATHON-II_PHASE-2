@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime
-from ..models.task_model import Task, TaskCreate
+from ..models.task import Task, TaskCreate
 from ..schemas.task_schemas import TaskResponse, TaskUpdate
 from uuid import UUID
 
@@ -194,3 +194,100 @@ def get_all_tasks_count_for_user(session: Session, user_id: str) -> int:
     statement = select(func.count(Task.id)).where(Task.user_id == user_id)
     count = session.exec(statement).one()
     return count
+
+
+def get_user_tasks_with_filters(
+    session: Session,
+    authenticated_user_id: str,
+    completed: Optional[bool] = None,
+    offset: int = 0,
+    limit: int = 50
+) -> List[TaskResponse]:
+    """
+    Get tasks for authenticated user with optional filters
+
+    Args:
+        session: Database session
+        authenticated_user_id: ID of the authenticated user (for authorization)
+        completed: Optional filter for completed status
+        offset: Pagination offset
+        limit: Pagination limit
+
+    Returns:
+        List of tasks owned by the authenticated user with applied filters
+    """
+    query = select(Task).where(Task.user_id == authenticated_user_id)
+
+    if completed is not None:
+        query = query.where(Task.completed == completed)
+
+    query = query.offset(offset).limit(limit)
+    tasks = session.exec(query).all()
+
+    return [
+        TaskResponse(
+            id=task.id,
+            user_id=task.user_id,
+            title=task.title,
+            description=task.description,
+            completed=task.completed,
+            created_at=task.created_at,
+            updated_at=task.updated_at
+        )
+        for task in tasks
+    ]
+
+
+def validate_task_ownership(session: Session, task_id: str, authenticated_user_id: str) -> bool:
+    """
+    Validate that a task belongs to the authenticated user
+
+    Args:
+        session: Database session
+        task_id: ID of the task to validate ownership for
+        authenticated_user_id: ID of the authenticated user
+
+    Returns:
+        True if task belongs to user, False otherwise
+    """
+    statement = select(Task).where(
+        Task.id == task_id,
+        Task.user_id == authenticated_user_id
+    )
+    task = session.exec(statement).first()
+    return task is not None
+
+
+def get_user_task_by_id(
+    session: Session,
+    authenticated_user_id: str,
+    task_id: str
+) -> Optional[TaskResponse]:
+    """
+    Get a specific task for the authenticated user
+
+    Args:
+        session: Database session
+        authenticated_user_id: ID of the authenticated user (for authorization)
+        task_id: ID of the task to retrieve
+
+    Returns:
+        Task if found and owned by user, None otherwise
+    """
+    statement = select(Task).where(
+        Task.id == task_id,
+        Task.user_id == authenticated_user_id
+    )
+    task = session.exec(statement).first()
+
+    if task:
+        return TaskResponse(
+            id=task.id,
+            user_id=task.user_id,
+            title=task.title,
+            description=task.description,
+            completed=task.completed,
+            created_at=task.created_at,
+            updated_at=task.updated_at
+        )
+    return None

@@ -3,15 +3,17 @@ from sqlmodel import Session
 from typing import List
 from uuid import UUID
 from ..database.session import get_session
-from ..models.task_model import TaskCreate
+from ..models.task import TaskCreate
 from ..schemas.task_schemas import TaskResponse, TaskUpdate, TaskListResponse
-from ..services.task_service import (
-    create_task,
-    get_tasks_by_user,
-    get_task_by_id_and_user,
-    update_task_by_id_and_user,
-    delete_task_by_id_and_user
+from ..services.task import (
+    create_task_for_user,
+    get_user_tasks,
+    get_user_task_by_id,
+    update_user_task,
+    delete_user_task
 )
+from ..auth.dependencies import get_current_user
+from ..models.auth import AuthenticatedUser
 from ..utils.uuid_generator import is_valid_uuid
 
 router = APIRouter(prefix="/api/{user_id}", tags=["tasks"])
@@ -21,19 +23,28 @@ router = APIRouter(prefix="/api/{user_id}", tags=["tasks"])
 def create_task_endpoint(
     user_id: str,
     task_data: TaskCreate,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Create a new task for a user
 
     Args:
-        user_id: ID of the user creating the task
+        user_id: ID of the user creating the task (from URL path)
         task_data: Task creation data
+        current_user: Authenticated user context from JWT token
         session: Database session
 
     Returns:
         Created task with 201 status code
     """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
     # Validate UUID format
     if not is_valid_uuid(user_id):
         raise HTTPException(
@@ -56,7 +67,7 @@ def create_task_endpoint(
         )
 
     try:
-        return create_task(session, task_data, user_id)
+        return create_task_for_user(session, task_data, current_user.user_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -67,6 +78,7 @@ def create_task_endpoint(
 @router.get("/tasks", response_model=List[TaskResponse])
 def get_tasks_endpoint(
     user_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     offset: int = 0,
     limit: int = 50,
     session: Session = Depends(get_session)
@@ -75,7 +87,8 @@ def get_tasks_endpoint(
     Get all tasks for a user with pagination
 
     Args:
-        user_id: ID of the user whose tasks to retrieve
+        user_id: ID of the user whose tasks to retrieve (from URL path)
+        current_user: Authenticated user context from JWT token
         offset: Pagination offset
         limit: Pagination limit (max 100)
         session: Database session
@@ -83,6 +96,13 @@ def get_tasks_endpoint(
     Returns:
         List of tasks for the user
     """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
     # Validate UUID format
     if not is_valid_uuid(user_id):
         raise HTTPException(
@@ -104,7 +124,7 @@ def get_tasks_endpoint(
         )
 
     try:
-        tasks = get_tasks_by_user(session, user_id, offset, limit)
+        tasks = get_user_tasks(session, current_user.user_id, offset, limit)
         return tasks
     except Exception as e:
         raise HTTPException(
@@ -117,19 +137,28 @@ def get_tasks_endpoint(
 def get_task_endpoint(
     user_id: str,
     task_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Get a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
+        user_id: ID of the user who owns the task (from URL path)
         task_id: ID of the task to retrieve
+        current_user: Authenticated user context from JWT token
         session: Database session
 
     Returns:
         The requested task
     """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
     # Validate UUID formats
     if not is_valid_uuid(user_id):
         raise HTTPException(
@@ -144,12 +173,12 @@ def get_task_endpoint(
         )
 
     try:
-        task = get_task_by_id_and_user(session, task_id, user_id)
+        task = get_user_task_by_id(session, current_user.user_id, task_id)
 
         if not task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
+                detail="Task not found"
             )
 
         return task
@@ -165,20 +194,29 @@ def update_task_endpoint(
     user_id: str,
     task_id: str,
     task_update: TaskUpdate,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Update a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
+        user_id: ID of the user who owns the task (from URL path)
         task_id: ID of the task to update
         task_update: Update data
+        current_user: Authenticated user context from JWT token
         session: Database session
 
     Returns:
         Updated task
     """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
     # Validate UUID formats
     if not is_valid_uuid(user_id):
         raise HTTPException(
@@ -208,12 +246,12 @@ def update_task_endpoint(
         )
 
     try:
-        updated_task = update_task_by_id_and_user(session, task_id, user_id, task_update)
+        updated_task = update_user_task(session, current_user.user_id, task_id, task_update)
 
         if not updated_task:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
+                detail="Task not found"
             )
 
         return updated_task
@@ -228,19 +266,28 @@ def update_task_endpoint(
 def delete_task_endpoint(
     user_id: str,
     task_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Delete a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
+        user_id: ID of the user who owns the task (from URL path)
         task_id: ID of the task to delete
+        current_user: Authenticated user context from JWT token
         session: Database session
 
     Returns:
         204 No Content if successful
     """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
     # Validate UUID formats
     if not is_valid_uuid(user_id):
         raise HTTPException(
@@ -255,12 +302,12 @@ def delete_task_endpoint(
         )
 
     try:
-        deleted = delete_task_by_id_and_user(session, task_id, user_id)
+        deleted = delete_user_task(session, current_user.user_id, task_id)
 
         if not deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
+                detail="Task not found"
             )
 
         # Return 204 No Content on successful deletion
@@ -269,4 +316,71 @@ def delete_task_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete task: {str(e)}"
+        )
+
+
+@router.patch("/tasks/{task_id}/complete", response_model=TaskResponse)
+def toggle_task_completion_endpoint(
+    user_id: str,
+    task_id: str,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """
+    Toggle the completion status of a specific task by its ID
+
+    Args:
+        user_id: ID of the user who owns the task (from URL path)
+        task_id: ID of the task to toggle completion status
+        current_user: Authenticated user context from JWT token
+        session: Database session
+
+    Returns:
+        Updated task with toggled completion status
+    """
+    # Validate that URL user_id matches JWT user_id
+    if user_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resource not found"
+        )
+
+    # Validate UUID formats
+    if not is_valid_uuid(user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user ID format"
+        )
+
+    if not is_valid_uuid(task_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid task ID format"
+        )
+
+    try:
+        # First get the task to check if it exists and belongs to the user
+        task = get_user_task_by_id(session, current_user.user_id, task_id)
+
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+
+        # Update the task's completion status (toggle)
+        task_update = TaskUpdate(completed=not task.completed)
+        updated_task = update_user_task(session, current_user.user_id, task_id, task_update)
+
+        if not updated_task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+
+        return updated_task
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to toggle task completion: {str(e)}"
         )

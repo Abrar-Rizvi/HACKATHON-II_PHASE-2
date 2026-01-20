@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .routes import tasks
-from .routes.protected import router as protected_router
+from .routes import protected
 from .exceptions import (
     TaskNotFoundException,
     UserNotFoundException,
@@ -32,8 +32,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(tasks.router, prefix="/api/{user_id}")
-app.include_router(protected_router, prefix="/api")
+app.include_router(tasks.router)  # tasks.router already has prefix "/api/{user_id}"
+app.include_router(protected.router, prefix="/api")
 
 # Add request logging middleware
 @app.middleware("http")

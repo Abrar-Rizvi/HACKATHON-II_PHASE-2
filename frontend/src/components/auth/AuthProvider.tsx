@@ -1,4 +1,6 @@
 // frontend/src/components/auth/AuthProvider.tsx
+'use client';
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthCredentials, SignUpData, LoginResponse, AuthContextType } from '../../types/auth';
 import { verifyToken, isTokenExpired } from '../../lib/auth/jwt-utils';

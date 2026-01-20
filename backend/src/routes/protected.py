@@ -5,8 +5,8 @@ This module defines API endpoints that require JWT authentication.
 """
 
 from fastapi import APIRouter, Depends
-from backend.src.models.auth import AuthenticatedUser
-from backend.src.auth.dependencies import get_current_user
+from ..models.auth import AuthenticatedUser
+from ..auth.dependencies import get_current_user
 
 
 router = APIRouter()

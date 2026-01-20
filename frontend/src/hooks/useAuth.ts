@@ -1,4 +1,2 @@
 // frontend/src/hooks/useAuth.ts
-import { useAuth } from '../components/auth/AuthProvider';
-
-export default useAuth;
+export { useAuth } from '@/lib/auth/auth-context';
