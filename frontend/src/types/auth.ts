@@ -1,9 +1,11 @@
 // frontend/src/types/auth.ts
 export interface User {
-  id: string;
+  id: number;
   email: string;
+  username: string;
   createdAt: string;
   updatedAt: string;
+  isActive: boolean;
 }
 
 export interface AuthCredentials {
@@ -11,20 +13,22 @@ export interface AuthCredentials {
   password: string;
 }
 
-export interface JWTToken {
-  accessToken: string;
-  refreshToken?: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
 export interface SignUpData extends AuthCredentials {
+  username: string;
   confirmPassword: string;
 }
 
 export interface LoginResponse {
-  user: User;
-  token: JWTToken;
+  access_token: string;
+  token_type: string;
+  user_id: number;
+  expires_at: string;
+}
+
+export interface JWTToken {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
 export interface AuthContextType {

@@ -20,8 +20,8 @@ const SignupPage: React.FC = () => {
       const response = await authAPI.signUp(data);
 
       // Store the token in localStorage
-      if (response.token.accessToken) {
-        localStorage.setItem('auth_token', response.token.accessToken);
+      if (response.access_token) {
+        localStorage.setItem('auth_token', response.access_token);
       }
 
       // Redirect to dashboard or home page after successful signup
