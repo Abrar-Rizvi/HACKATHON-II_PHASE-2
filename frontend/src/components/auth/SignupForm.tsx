@@ -12,6 +12,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
   const [formData, setFormData] = useState<Omit<SignUpData, 'confirmPassword'>>({
     email: '',
     password: '',
+    username: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

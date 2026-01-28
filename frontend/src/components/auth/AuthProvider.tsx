@@ -1,3 +1,4 @@
+"use client"
 // frontend/src/components/auth/AuthProvider.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthCredentials, SignUpData, LoginResponse, AuthContextType } from '../../types/auth';
@@ -32,24 +33,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (isValid && !isTokenExpired(storedToken)) {
         setToken(storedToken);
         setIsAuthenticated(true);
-        // In a real app, we would fetch user details here using the token
-        // For now, we'll set a placeholder user
-        setUser({
-          id: 'placeholder-id',
-          email: 'placeholder@example.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+
+        // Extract user details from token payload
+        try {
+          const tokenParts = storedToken.split('.');
+          if (tokenParts.length === 3) {
+            const payloadStr = atob(tokenParts[1]);
+            const payload = JSON.parse(payloadStr);
+            const mockUser: User = {
+              id: payload.sub ? parseInt(payload.sub) : 0,
+              email: payload.email || 'unknown@example.com',
+              username: payload.email?.split('@')[0] || 'user',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              isActive: true
+            };
+            setUser(mockUser);
+          }
+        } catch (e) {
+          console.warn('Could not parse token payload to create user object');
+          // Fallback to a generic user
+          setUser({
+            id: 0,
+            email: 'unknown@example.com',
+            username: 'user',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isActive: true
+          });
+        }
       } else {
         // Token is invalid or expired, clear it
         localStorage.removeItem('auth_token');
         setToken(null);
+        setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error verifying stored token:', error);
       localStorage.removeItem('auth_token');
       setToken(null);
+      setUser(null);
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
@@ -61,17 +85,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authAPI.signUp(credentials);
 
       // Store the token in localStorage
-      if (response.token.accessToken) {
-        localStorage.setItem('auth_token', response.token.accessToken);
-        setToken(response.token.accessToken);
+      if (response.access_token) {
+        localStorage.setItem('auth_token', response.access_token);
+        setToken(response.access_token);
         setIsAuthenticated(true);
-        // In a real app, we would set user details from the response
-        setUser({
-          id: 'new-user-id',
+
+        // Create user object from response
+        const mockUser: User = {
+          id: response.user_id,
           email: credentials.email,
+          username: credentials.username,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+          updatedAt: new Date().toISOString(),
+          isActive: true
+        };
+        setUser(mockUser);
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -84,17 +112,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authAPI.signIn(credentials);
 
       // Store the token in localStorage
-      if (response.token.accessToken) {
-        localStorage.setItem('auth_token', response.token.accessToken);
-        setToken(response.token.accessToken);
+      if (response.access_token) {
+        localStorage.setItem('auth_token', response.access_token);
+        setToken(response.access_token);
         setIsAuthenticated(true);
-        // In a real app, we would set user details from the response
-        setUser({
-          id: 'signed-in-user-id',
-          email: credentials.email,
+
+        // Create user object from response and token payload
+        const tokenParts = response.access_token.split('.');
+        let userId = response.user_id;
+        let userEmail = credentials.email;
+        let username = credentials.email.split('@')[0];
+
+        if (tokenParts.length === 3) {
+          try {
+            const payloadStr = atob(tokenParts[1]);
+            const payload = JSON.parse(payloadStr);
+            userId = parseInt(payload.sub) || response.user_id;
+            userEmail = payload.email || credentials.email;
+            username = payload.email?.split('@')[0] || username;
+          } catch (e) {
+            console.warn('Could not parse token payload');
+          }
+        }
+
+        const mockUser: User = {
+          id: userId,
+          email: userEmail,
+          username: username,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
+          updatedAt: new Date().toISOString(),
+          isActive: true
+        };
+        setUser(mockUser);
       }
     } catch (error) {
       console.error('Sign in error:', error);

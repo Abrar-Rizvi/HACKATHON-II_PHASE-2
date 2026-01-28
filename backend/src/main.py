@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .routes import tasks
+from .routes import auth
 from .exceptions import (
     TaskNotFoundException,
     UserNotFoundException,
@@ -30,7 +31,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(tasks.router, prefix="/api/{user_id}")
+app.include_router(tasks.router)
+app.include_router(auth.router)
 
 # Add request logging middleware
 @app.middleware("http")
