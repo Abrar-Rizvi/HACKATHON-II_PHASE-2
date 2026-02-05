@@ -1,0 +1,228 @@
+# API Contract: JWT-Secured Todo Application
+
+## Overview
+This document defines the API contracts for the JWT-secured full-stack Todo application based on the feature specification in `/specs/001-auth-secured-todo/spec.md`.
+
+## Base URL
+`/api`
+
+## Authentication
+All protected endpoints require JWT authentication via `Authorization: Bearer <token>` header.
+
+## Common Error Responses
+All endpoints may return these standard error responses:
+
+### 401 Unauthorized
+```json
+{
+  "error": "unauthorized",
+  "message": "Authentication token is missing or invalid",
+  "status_code": 401
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "error": "forbidden",
+  "message": "Access denied - insufficient permissions",
+  "status_code": 403
+}
+```
+
+### 404 Not Found
+```json
+{
+  "error": "not_found",
+  "message": "Requested resource does not exist",
+  "status_code": 404
+}
+```
+
+### 422 Validation Error
+```json
+{
+  "error": "validation_error",
+  "message": "Request data validation failed",
+  "status_code": 422
+}
+```
+
+## Endpoints
+
+### Task Management
+
+#### GET /tasks
+Retrieve all tasks for the authenticated user.
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Response: 200 OK**
+```json
+{
+  "tasks": [
+    {
+      "id": "uuid-string",
+      "user_id": "uuid-string",
+      "title": "Task title",
+      "description": "Task description or null",
+      "completed": false,
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+**Response: 401 Unauthorized** - Invalid or missing JWT token
+
+#### POST /tasks
+Create a new task for the authenticated user.
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Request Body:**
+```json
+{
+  "title": "Task title",
+  "description": "Optional task description"
+}
+```
+
+**Response: 201 Created**
+```json
+{
+  "id": "uuid-string",
+  "user_id": "uuid-string",
+  "title": "Task title",
+  "description": "Task description or null",
+  "completed": false,
+  "created_at": "2023-01-01T00:00:00Z",
+  "updated_at": "2023-01-01T00:00:00Z"
+}
+```
+
+**Response: 400 Bad Request** - Invalid request data
+
+#### GET /tasks/{task_id}
+Retrieve a specific task by ID for the authenticated user.
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Path Parameters:**
+- `task_id`: UUID of the task to retrieve
+
+**Response: 200 OK**
+```json
+{
+  "id": "uuid-string",
+  "user_id": "uuid-string",
+  "title": "Task title",
+  "description": "Task description or null",
+  "completed": false,
+  "created_at": "2023-01-01T00:00:00Z",
+  "updated_at": "2023-01-01T00:00:00Z"
+}
+```
+
+**Response: 404 Not Found** - Task does not exist or does not belong to user
+
+#### PUT /tasks/{task_id}
+Update a specific task by ID for the authenticated user.
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Path Parameters:**
+- `task_id`: UUID of the task to update
+
+**Request Body:**
+```json
+{
+  "title": "Updated task title",
+  "description": "Updated task description",
+  "completed": true
+}
+```
+
+**Response: 200 OK**
+```json
+{
+  "id": "uuid-string",
+  "user_id": "uuid-string",
+  "title": "Updated task title",
+  "description": "Updated task description",
+  "completed": true,
+  "created_at": "2023-01-01T00:00:00Z",
+  "updated_at": "2023-01-01T00:00:00Z"
+}
+```
+
+**Response: 400 Bad Request** - Invalid request data
+
+**Response: 404 Not Found** - Task does not exist or does not belong to user
+
+#### PATCH /tasks/{task_id}
+Partially update a specific task by ID for the authenticated user (used for toggling completion status).
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Path Parameters:**
+- `task_id`: UUID of the task to update
+
+**Request Body:**
+```json
+{
+  "completed": true
+}
+```
+
+**Response: 200 OK**
+```json
+{
+  "id": "uuid-string",
+  "user_id": "uuid-string",
+  "title": "Task title",
+  "description": "Task description or null",
+  "completed": true,
+  "created_at": "2023-01-01T00:00:00Z",
+  "updated_at": "2023-01-01T00:00:00Z"
+}
+```
+
+**Response: 400 Bad Request** - Invalid request data
+
+**Response: 404 Not Found** - Task does not exist or does not belong to user
+
+#### DELETE /tasks/{task_id}
+Delete a specific task by ID for the authenticated user.
+
+**Headers:**
+- `Authorization: Bearer <JWT_TOKEN>` (required)
+
+**Path Parameters:**
+- `task_id`: UUID of the task to delete
+
+**Response: 204 No Content** - Task successfully deleted
+
+**Response: 404 Not Found** - Task does not exist or does not belong to user
+
+## Security Considerations
+
+### Authentication
+- All task-related endpoints require valid JWT in Authorization header
+- JWT must contain valid `user_id` claim for authorization
+
+### Authorization
+- Users can only access tasks where `user_id` matches their authenticated user ID
+- Backend must verify JWT validity and extract user context
+- Backend must filter all database queries by authenticated user's ID
+
+### Data Validation
+- All input data must be validated before processing
+- Malicious input must be sanitized
+- Response data should not expose sensitive information

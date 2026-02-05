@@ -9,11 +9,12 @@ from ..database.session import get_session
 from sqlmodel import Session, select
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
+from uuid import UUID
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
-# JWT Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-default-secret-key-change-in-production")
+# JWT Configuration - Using the same secret as the middleware
+SECRET_KEY = os.getenv("BETTER_AUTH_SECRET", "your-default-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -28,7 +29,7 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str
-    user_id: int
+    user_id: str  # Changed to string to accommodate UUID
     expires_at: datetime
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -69,7 +70,7 @@ def login(login_request: LoginRequest, session: Session = Depends(get_session)):
     return LoginResponse(
         access_token=access_token,
         token_type="bearer",
-        user_id=user.id,
+        user_id=str(user.id),  # Convert to string for UUID compatibility
         expires_at=expires_at
     )
 
@@ -135,6 +136,6 @@ def register(user_create: UserCreate, session: Session = Depends(get_session)):
     return LoginResponse(
         access_token=access_token,
         token_type="bearer",
-        user_id=db_user.id,
+        user_id=str(db_user.id),  # Convert to string for UUID compatibility
         expires_at=expires_at
     )

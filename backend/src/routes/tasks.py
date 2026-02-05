@@ -13,50 +13,33 @@ from ..services.task_service import (
     delete_task_by_id_and_user
 )
 from ..utils.uuid_generator import is_valid_uuid
+from ..middleware.jwt_middleware import get_current_user, TokenData
+from ..utils.errors import unauthorized_error, forbidden_error, not_found_error, validation_error
 
-router = APIRouter(prefix="/api/{user_id}", tags=["tasks"])
+router = APIRouter(prefix="/api", tags=["tasks"])
 
 
 @router.post("/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def create_task_endpoint(
-    user_id: str,
     task_data: TaskCreate,
+    current_user: TokenData = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
-    Create a new task for a user
+    Create a new task for the authenticated user
 
     Args:
-        user_id: ID of the user creating the task
         task_data: Task creation data
+        current_user: The authenticated user from JWT token
         session: Database session
 
     Returns:
         Created task with 201 status code
     """
-    # Validate UUID format
-    if not is_valid_uuid(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID format"
-        )
-
-    # Validate title length
-    if len(task_data.title) < 1 or len(task_data.title) > 100:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Title must be between 1 and 100 characters"
-        )
-
-    # Validate description length
-    if task_data.description and len(task_data.description) > 500:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Description must be at most 500 characters"
-        )
-
     try:
-        return create_task(session, task_data, user_id)
+        # Use user_id from JWT token instead of URL parameter
+        # The task_data is already validated by Pydantic via TaskCreate model
+        return create_task(session, task_data, current_user.user_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -66,30 +49,23 @@ def create_task_endpoint(
 
 @router.get("/tasks", response_model=List[TaskResponse])
 def get_tasks_endpoint(
-    user_id: str,
+    current_user: TokenData = Depends(get_current_user),
     offset: int = 0,
     limit: int = 50,
     session: Session = Depends(get_session)
 ):
     """
-    Get all tasks for a user with pagination
+    Get all tasks for the authenticated user with pagination
 
     Args:
-        user_id: ID of the user whose tasks to retrieve
+        current_user: The authenticated user from JWT token
         offset: Pagination offset
         limit: Pagination limit (max 100)
         session: Database session
 
     Returns:
-        List of tasks for the user
+        List of tasks for the authenticated user
     """
-    # Validate UUID format
-    if not is_valid_uuid(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID format"
-        )
-
     # Validate pagination parameters
     if offset < 0:
         raise HTTPException(
@@ -104,7 +80,8 @@ def get_tasks_endpoint(
         )
 
     try:
-        tasks = get_tasks_by_user(session, user_id, offset, limit)
+        # Use user_id from JWT token instead of URL parameter
+        tasks = get_tasks_by_user(session, current_user.user_id, offset, limit)
         return tasks
     except Exception as e:
         raise HTTPException(
@@ -115,28 +92,22 @@ def get_tasks_endpoint(
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
 def get_task_endpoint(
-    user_id: str,
     task_id: str,
+    current_user: TokenData = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Get a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
         task_id: ID of the task to retrieve
+        current_user: The authenticated user from JWT token
         session: Database session
 
     Returns:
         The requested task
     """
     # Validate UUID formats
-    if not is_valid_uuid(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID format"
-        )
-
     if not is_valid_uuid(task_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -144,13 +115,11 @@ def get_task_endpoint(
         )
 
     try:
-        task = get_task_by_id_and_user(session, task_id, user_id)
+        # Use user_id from JWT token instead of URL parameter
+        task = get_task_by_id_and_user(session, task_id, current_user.user_id)
 
         if not task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
-            )
+            raise not_found_error("Task not found or not owned by user")
 
         return task
     except Exception as e:
@@ -162,59 +131,37 @@ def get_task_endpoint(
 
 @router.put("/tasks/{task_id}", response_model=TaskResponse)
 def update_task_endpoint(
-    user_id: str,
     task_id: str,
     task_update: TaskUpdate,
+    current_user: TokenData = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Update a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
         task_id: ID of the task to update
         task_update: Update data
+        current_user: The authenticated user from JWT token
         session: Database session
 
     Returns:
         Updated task
     """
     # Validate UUID formats
-    if not is_valid_uuid(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID format"
-        )
-
     if not is_valid_uuid(task_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid task ID format"
         )
 
-    # Validate title length if provided
-    if task_update.title is not None:
-        if len(task_update.title) < 1 or len(task_update.title) > 100:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Title must be between 1 and 100 characters"
-            )
-
-    # Validate description length if provided
-    if task_update.description is not None and len(task_update.description) > 500:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Description must be at most 500 characters"
-        )
-
     try:
-        updated_task = update_task_by_id_and_user(session, task_id, user_id, task_update)
+        # Use user_id from JWT token instead of URL parameter
+        # The task_update is already validated by Pydantic via TaskUpdate model
+        updated_task = update_task_by_id_and_user(session, task_id, current_user.user_id, task_update)
 
         if not updated_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
-            )
+            raise not_found_error("Task not found or not owned by user")
 
         return updated_task
     except Exception as e:
@@ -226,28 +173,22 @@ def update_task_endpoint(
 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task_endpoint(
-    user_id: str,
     task_id: str,
+    current_user: TokenData = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
     Delete a specific task by its ID
 
     Args:
-        user_id: ID of the user who owns the task
         task_id: ID of the task to delete
+        current_user: The authenticated user from JWT token
         session: Database session
 
     Returns:
         204 No Content if successful
     """
     # Validate UUID formats
-    if not is_valid_uuid(user_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID format"
-        )
-
     if not is_valid_uuid(task_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -255,13 +196,11 @@ def delete_task_endpoint(
         )
 
     try:
-        deleted = delete_task_by_id_and_user(session, task_id, user_id)
+        # Use user_id from JWT token instead of URL parameter
+        deleted = delete_task_by_id_and_user(session, task_id, current_user.user_id)
 
         if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found or not owned by user"
-            )
+            raise not_found_error("Task not found or not owned by user")
 
         # Return 204 No Content on successful deletion
         return
@@ -269,4 +208,46 @@ def delete_task_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete task: {str(e)}"
+        )
+
+
+@router.patch("/tasks/{task_id}", response_model=TaskResponse)
+def toggle_task_completion_endpoint(
+    task_id: str,
+    task_update: TaskUpdate,
+    current_user: TokenData = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """
+    Toggle task completion status by updating the completed field
+
+    Args:
+        task_id: ID of the task to update
+        task_update: Update data (specifically the completed field)
+        current_user: The authenticated user from JWT token
+        session: Database session
+
+    Returns:
+        Updated task with new completion status
+    """
+    # Validate UUID format
+    if not is_valid_uuid(task_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid task ID format"
+        )
+
+    try:
+        # Use user_id from JWT token instead of URL parameter
+        # The task_update is already validated by Pydantic via TaskUpdate model
+        updated_task = update_task_by_id_and_user(session, task_id, current_user.user_id, task_update)
+
+        if not updated_task:
+            raise not_found_error("Task not found or not owned by user")
+
+        return updated_task
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update task: {str(e)}"
         )

@@ -1,11 +1,12 @@
 // frontend/src/lib/api/auth-api.ts
 import { AuthCredentials, SignUpData, LoginResponse } from '../../types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/auth';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const BETTER_AUTH_URL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
 
 class AuthAPI {
   async signUp(credentials: SignUpData): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${BETTER_AUTH_URL}/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +27,7 @@ class AuthAPI {
   }
 
   async signIn(credentials: AuthCredentials): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${BETTER_AUTH_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

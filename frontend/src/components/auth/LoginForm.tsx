@@ -1,3 +1,4 @@
+'use client'
 // frontend/src/components/auth/LoginForm.tsx
 import React, { useState } from 'react';
 import { AuthCredentials } from '../../types/auth';
