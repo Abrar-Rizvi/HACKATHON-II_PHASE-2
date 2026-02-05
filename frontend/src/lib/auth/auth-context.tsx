@@ -1,3 +1,4 @@
+'use client'
 // frontend/src/lib/auth/auth-context.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthCredentials, SignUpData, LoginResponse, AuthContextType, JWTToken } from '../../types/auth';

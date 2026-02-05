@@ -5,6 +5,7 @@ import { User, AuthCredentials, SignUpData, LoginResponse, AuthContextType } fro
 import { verifyToken, isTokenExpired } from '../../lib/auth/jwt-utils';
 import { authAPI } from '../../lib/api/auth-api';
 
+
 interface AuthProviderProps {
   children: ReactNode;
 }

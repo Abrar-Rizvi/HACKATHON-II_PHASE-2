@@ -1,6 +1,8 @@
+'use client'
 // frontend/src/components/auth/ProtectedRoute.tsx
 import React from 'react';
-import { useAuth } from '../../lib/auth/auth-context';
+// import { useAuth } from '../../lib/auth/auth-context';
+import { useAuth } from '@/components/auth/AuthProvider'
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
