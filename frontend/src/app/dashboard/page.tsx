@@ -90,10 +90,10 @@ const DashboardPage: React.FC = () => {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-saas-bg-light py-12">
           <div className="container mx-auto px-4">
-            <div className="bg-white rounded-lg shadow-md p-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+            <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+              <h1 className="text-3xl font-bold text-saas-primary-blue mb-6">Dashboard</h1>
               <div className="text-center py-12">
                 <p>Loading tasks...</p>
               </div>
@@ -106,22 +106,30 @@ const DashboardPage: React.FC = () => {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+      <div className="min-h-screen bg-saas-bg-light py-8">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="bg-white rounded-xl shadow-lg p-8 transition-all duration-300">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
+              <h1 className="text-3xl font-bold text-saas-primary-blue mb-4 sm:mb-0">Task Dashboard</h1>
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-6 py-3 bg-saas-primary-blue text-white font-medium rounded-lg hover:bg-[#5a8bad] transition-colors duration-200 shadow-sm hover:shadow-md active:scale-[0.98]"
+              >
+                Create New Task
+              </button>
+            </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700">{error}</p>
+              <div className="mb-6 p-4 bg-saas-accent-red/10 border border-saas-accent-red text-saas-accent-red rounded-lg">
+                <p>{error}</p>
               </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 {showForm ? (
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold mb-4">
+                  <div className="mb-8 p-6 bg-saas-bg-light/50 rounded-xl border border-saas-bg-light">
+                    <h2 className="text-xl font-semibold text-saas-primary-blue mb-6">
                       {editingTask ? 'Edit Task' : 'Create New Task'}
                     </h2>
                     <TodoForm
@@ -137,14 +145,7 @@ const DashboardPage: React.FC = () => {
                       } : undefined}
                     />
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setShowForm(true)}
-                    className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  >
-                    Create New Task
-                  </button>
-                )}
+                ) : null}
 
                 {tasks.length > 0 ? (
                   <TodoList
@@ -154,57 +155,59 @@ const DashboardPage: React.FC = () => {
                     onEditTask={handleEditTask}
                   />
                 ) : (
-                  <div className="text-center py-12">
-                    <h3 className="text-xl font-medium text-gray-900 mb-2">No tasks yet</h3>
-                    <p className="text-gray-600 mb-4">Get started by creating your first task</p>
-                    <button
-                      onClick={() => setShowForm(true)}
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      Create your first task
-                    </button>
+                  <div className="text-center py-16">
+                    <div className="mx-auto max-w-md">
+                      <h3 className="text-xl font-medium text-saas-primary-blue mb-3">No tasks yet</h3>
+                      <p className="text-saas-secondary-teal mb-6">Get started by creating your first task</p>
+                      <button
+                        onClick={() => setShowForm(true)}
+                        className="px-6 py-3 bg-saas-primary-blue text-white font-medium rounded-lg hover:bg-[#5a8bad] transition-colors duration-200 shadow-sm hover:shadow-md active:scale-[0.98]"
+                      >
+                        Create your first task
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Statistics</h3>
+              <div className="lg:col-span-1 space-y-6">
+                <div className="bg-white rounded-xl shadow p-6 border border-saas-bg-light">
+                  <h3 className="text-lg font-semibold text-saas-primary-blue mb-4">Statistics</h3>
 
-                  <div className="space-y-4">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-700">{tasks.length}</p>
-                      <p className="text-sm text-gray-600">Total Tasks</p>
+                  <div className="space-y-5">
+                    <div className="p-5 bg-linear-to-r from-saas-primary-blue/5 to-saas-primary-blue/10 rounded-xl border border-saas-primary-blue/20">
+                      <p className="text-3xl font-bold text-saas-primary-blue">{tasks.length}</p>
+                      <p className="text-saas-secondary-teal mt-1">Total Tasks</p>
                     </div>
 
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <p className="text-2xl font-bold text-green-700">
+                    <div className="p-5 bg-linear-to-r from-green-500/5 to-green-500/10 rounded-xl border border-green-500/20">
+                      <p className="text-3xl font-bold text-green-600">
                         {tasks.filter(t => t.completed).length}
                       </p>
-                      <p className="text-sm text-gray-600">Completed</p>
+                      <p className="text-saas-secondary-teal mt-1">Completed</p>
                     </div>
 
-                    <div className="p-4 bg-yellow-50 rounded-lg">
-                      <p className="text-2xl font-bold text-yellow-700">
+                    <div className="p-5 bg-linear-to-r from-amber-500/5 to-amber-500/10 rounded-xl border border-amber-500/20">
+                      <p className="text-3xl font-bold text-amber-600">
                         {tasks.filter(t => !t.completed).length}
                       </p>
-                      <p className="text-sm text-gray-600">Pending</p>
+                      <p className="text-saas-secondary-teal mt-1">Pending</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Upcoming</h3>
+                <div className="bg-white rounded-xl shadow p-6 border border-saas-bg-light">
+                  <h3 className="text-lg font-semibold text-saas-primary-blue mb-4">Upcoming</h3>
 
-                  <div className="space-y-3">
-                    <div className="p-3 border border-gray-200 rounded">
-                      <p className="font-medium">Team Meeting</p>
-                      <p className="text-sm text-gray-500">Mon, 10:00 AM</p>
+                  <div className="space-y-4">
+                    <div className="p-4 border border-saas-bg-light rounded-lg hover:border-saas-primary-blue/30 transition-colors duration-200">
+                      <p className="font-medium text-saas-primary-blue">Team Meeting</p>
+                      <p className="text-sm text-saas-secondary-teal mt-1">Mon, 10:00 AM</p>
                     </div>
 
-                    <div className="p-3 border border-gray-200 rounded">
-                      <p className="font-medium">Project Deadline</p>
-                      <p className="text-sm text-gray-500">Wed, 5:00 PM</p>
+                    <div className="p-4 border border-saas-bg-light rounded-lg hover:border-saas-primary-blue/30 transition-colors duration-200">
+                      <p className="font-medium text-saas-primary-blue">Project Deadline</p>
+                      <p className="text-sm text-saas-secondary-teal mt-1">Wed, 5:00 PM</p>
                     </div>
                   </div>
                 </div>

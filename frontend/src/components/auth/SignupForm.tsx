@@ -55,18 +55,35 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
+    <>
+      <h2 className="text-2xl font-bold mb-6 text-center text-saas-primary-blue">Create Account</h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-3 bg-saas-accent-red/10 border border-saas-accent-red text-saas-accent-red rounded-md">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label htmlFor="username" className="block text-saas-secondary-teal text-sm font-medium mb-2">
+            Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-saas-bg-light rounded-lg focus:outline-none focus:ring-2 focus:ring-saas-primary-blue focus:border-saas-primary-blue transition-all duration-200 disabled:opacity-50"
+            required
+            disabled={loading}
+            placeholder="Choose a username"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-saas-secondary-teal text-sm font-medium mb-2">
             Email
           </label>
           <input
@@ -75,14 +92,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full px-4 py-3 border border-saas-bg-light rounded-lg focus:outline-none focus:ring-2 focus:ring-saas-primary-blue focus:border-saas-primary-blue transition-all duration-200 disabled:opacity-50"
             required
             disabled={loading}
+            placeholder="Enter your email"
           />
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+        <div>
+          <label htmlFor="password" className="block text-saas-secondary-teal text-sm font-medium mb-2">
             Password
           </label>
           <div className="relative">
@@ -92,14 +110,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-4 py-3 border border-saas-bg-light rounded-lg focus:outline-none focus:ring-2 focus:ring-saas-primary-blue focus:border-saas-primary-blue transition-all duration-200 disabled:opacity-50"
               required
               minLength={8}
               disabled={loading}
+              placeholder="Create a password"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-saas-secondary-teal hover:text-saas-primary-blue"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
             >
@@ -108,8 +127,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
           </div>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">
+        <div>
+          <label htmlFor="confirmPassword" className="block text-saas-secondary-teal text-sm font-medium mb-2">
             Confirm Password
           </label>
           <div className="relative">
@@ -118,14 +137,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
               id="confirmPassword"
               value={confirmPassword}
               onChange={handleConfirmPasswordChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-4 py-3 border border-saas-bg-light rounded-lg focus:outline-none focus:ring-2 focus:ring-saas-primary-blue focus:border-saas-primary-blue transition-all duration-200 disabled:opacity-50"
               required
               minLength={8}
               disabled={loading}
+              placeholder="Confirm your password"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-saas-secondary-teal hover:text-saas-primary-blue"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               disabled={loading}
             >
@@ -134,13 +154,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
           </div>
         </div>
 
+       
+
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-md text-white font-medium transition-colors ${
+          className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all duration-200 ${
             loading
-              ? 'bg-blue-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+              ? 'bg-saas-primary-blue/70 cursor-not-allowed'
+              : 'bg-saas-primary-blue hover:bg-[#5a8bad] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saas-primary-blue'
           }`}
         >
           {loading ? (
@@ -154,18 +176,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, loading = false, erro
           ) : 'Sign Up'}
         </button>
       </form>
-
-      <p className="mt-4 text-center text-gray-600 text-sm">
-        Already have an account?{' '}
-        <a
-          href="/login"
-          className="text-blue-600 hover:text-blue-800 font-medium no-underline hover:underline transition-all"
-          aria-label="Sign in to your existing account"
-        >
-          Sign in
-        </a>
-      </p>
-    </div>
+    </>
   );
 };
 
