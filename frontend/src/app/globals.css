@@ -3,11 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* SaaS Style Color Palette Variables */
+  --saas-bg-light: #f0f2f4;
+  --saas-primary-blue: #639ac0;
+  --saas-secondary-teal: #6da6af;
+  --saas-accent-cyan: #c5f5f9;
+  --saas-accent-red: #953640;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-saas-bg-light: var(--saas-bg-light);
+  --color-saas-primary-blue: var(--saas-primary-blue);
+  --color-saas-secondary-teal: var(--saas-secondary-teal);
+  --color-saas-accent-cyan: var(--saas-accent-cyan);
+  --color-saas-accent-red: var(--saas-accent-red);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +28,13 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* Dark mode SaaS Style Color Palette Variables */
+    --saas-bg-light: #2d3748;
+    --saas-primary-blue: #5a8bad;
+    --saas-secondary-teal: #5e9499;
+    --saas-accent-cyan: #7fcfd4;
+    --saas-accent-red: #c53030;
   }
 }
 
@@ -23,4 +42,44 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Global animations and transitions for smooth interactions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* For better performance on mobile devices */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Animation for fade-in effects */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover scale effects for interactive elements */
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Smooth button transitions */
+.btn-transition {
+  transition: all 0.2s ease-in-out;
 }

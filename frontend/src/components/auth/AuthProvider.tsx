@@ -83,25 +83,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (credentials: SignUpData) => {
     try {
-      const response = await authAPI.signUp(credentials);
+       const response = await authAPI.signUp(credentials);
 
-      // Store the token in localStorage
+      // Do NOT auto-login after signup - only store the token temporarily
+      // The user will need to login separately
       if (response.access_token) {
+        // Temporarily store the token but don't set auth state
         localStorage.setItem('auth_token', response.access_token);
-        setToken(response.access_token);
-        setIsAuthenticated(true);
-
-        // Create user object from response
-        const mockUser: User = {
-          id: response.user_id,
-          email: credentials.email,
-          username: credentials.username,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isActive: true
-        };
-        setUser(mockUser);
       }
+
+      // Do NOT set isAuthenticated to true or set user after signup
+      // User will authenticate separately on login page
     } catch (error) {
       console.error('Sign up error:', error);
       throw error;
